@@ -10,7 +10,22 @@ import Foundation
 import UIKit
 import CoreData
 
-class ListaNotas: UIViewController, UITableViewDelegate {
+class ListaNotas: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.entradas.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Celula entrada", for: indexPath)
+        let entrada = entradas[indexPath.row]
+        
+        cell.textLabel?.text = entrada.value(forKey: "corpoTexto") as? String
+        cell.detailTextLabel?.text = entrada.value(forKey: "criadoEm") as? String
+        
+        return cell
+    }
+    
     @IBOutlet weak var outletNotaDiaria: UIButton!
     override var prefersStatusBarHidden: Bool {
         return true
@@ -25,7 +40,7 @@ class ListaNotas: UIViewController, UITableViewDelegate {
         outletNotaDiaria.layer.cornerRadius = 40
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         objetoGerenciado = appDelegate.persistentContainer.viewContext
-        
+        tabelaNotas.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -34,10 +49,10 @@ class ListaNotas: UIViewController, UITableViewDelegate {
     }
     
     func buscarEntradas(){
-        let pedidoBusca = NSFetchRequest<NSFetchRequestResult>(entityName: "Nota")
+        let pedidoBusca = NSFetchRequest<NSManagedObject>(entityName: "Nota") // <NSManagedObject>
         do {
-            let objetosEntrada = try objetoGerenciado.execute(pedidoBusca)
-            self.entradas = (objetosEntrada as! [NSManagedObject])
+            let objetosEntrada = try objetoGerenciado.fetch(pedidoBusca)
+            self.entradas = objetosEntrada
         } catch let erro as NSError {
             print("Não foi possível buscar entradas\(erro), \(erro.userInfo)")
         }
@@ -73,10 +88,10 @@ class ListaController: UITableViewController {
     }
     
     func buscarEntradas(){
-        let pedidoBusca = NSFetchRequest<NSFetchRequestResult>(entityName: "Nota")
+        let pedidoBusca = NSFetchRequest<NSManagedObject>(entityName: "Nota")
         do {
-            let objetosEntrada = try objetoGerenciado.execute(pedidoBusca)
-            self.entradas = (objetosEntrada as! [NSManagedObject])
+            let objetosEntrada = try objetoGerenciado.fetch(pedidoBusca)
+            self.entradas = (objetosEntrada)
         } catch let erro as NSError {
             print("Não foi possível buscar entradas\(erro), \(erro.userInfo)")
         }
